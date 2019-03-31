@@ -6,12 +6,36 @@ var PersonalityInsights = new PersonalityInsightsV3(
         version_date: '2017-10-13'
     }
 );
+var bodyParser = require('body-parser');
 var express = require('express');
 var app = express();
-app.get('/test', function(req, res){
+app.use(express.static("../Front End/"));
+app.use(bodyParser.urlencoded({extended:true}));
 
-    while(1);
-    res.send("Hello World");
+var analysis;
 
+app.get('/getResult', function(req,res){
+	res.send(analysis);
 });
+
+app.post('/test', function(req, res){
+
+    var profileParams = {
+    	content: req.body.data,
+    	content_type: "text/plain",
+    	raw_scores: true
+    }
+    console.log(profileParams.content);
+    PersonalityInsights.profile(profileParams, function(err, profile){
+    	if(err){
+    		console.log(err);
+    		res.send({"status": "error"});
+    	}
+    	else{
+    		analysis = JSON.stringify(profile, null, 2);
+    		res.send({"status": "success"});
+    	}
+    });
+});
+
 app.listen(3000);

@@ -6,44 +6,84 @@
         <script src="jquery-3.3.1.min.js"></script>
         <script src="chart.js/dist/Chart.js"></script>
         <script>
+
+            function setCookie(name,value,days) {
+                var expires = "";
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime() + (days*24*60*60*1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+            }
+            function getCookie(name) {
+                var nameEQ = name + "=";
+                var ca = document.cookie.split(';');
+                for(var i=0;i < ca.length;i++) {
+                    var c = ca[i];
+                    while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                }
+                return null;
+            }
+
             $(window).on('load', function(){
-                var ctx = document.getElementById('myChart').getContext('2d');
-                var chart = new Chart(ctx, {
-                    // The type of chart we want to create
-                    type: 'doughnut',
+                $.ajax({
+                        type: 'get',
+                        url: "getResult",
+                        success: function(resultData) {
+                            console.log(resultData);
+                            var labels = [];
+                            var data = [];
+                            for(var i = 0; i < 5; i++){
+                                var curr = JSON.parse(resultData)["personality"][i];
+                                var name = curr["name"];
+                                var percentile = curr["percentile"];
+                                labels[i] = name;
+                                data[i] = percentile;
+                                console.log("NUMBER: " + i + ": " + name + " " + percentile);
+                            }
+                            
+                            var ctx = document.getElementById('myChart').getContext('2d');
+                            var chart = new Chart(ctx, {
+                                // The type of chart we want to create
+                                type: 'doughnut',
 
-                    // The data for our dataset
-                    data: {
-                        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-                        datasets: [{
-                            data: [0, 10, 5, 2, 20, 30, 45],
-                            backgroundColor: [
-                                'red',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(75, 192, 192, 0.2)',
-                                'rgba(153, 102, 255, 0.2)',
-                                'rgba(255, 159, 64, 0.2)'
-                            ],
-                            borderColor: [
-                                'red',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
+                                // The data for our dataset
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        data: data,
+                                        backgroundColor: [
+                                            'red',
+                                            'rgba(54, 162, 235, 0.2)',
+                                            'rgba(255, 206, 86, 0.2)',
+                                            'rgba(75, 192, 192, 0.2)',
+                                            'rgba(153, 102, 255, 0.2)',
+                                            'rgba(255, 159, 64, 0.2)'
+                                        ],
+                                        borderColor: [
+                                            'red',
+                                            'rgba(54, 162, 235, 1)',
+                                            'rgba(255, 206, 86, 1)',
+                                            'rgba(75, 192, 192, 1)',
+                                            'rgba(153, 102, 255, 1)',
+                                            'rgba(255, 159, 64, 1)'
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                },
 
-                    // Configuration options go here
-                    options: {
-                        onClick: function(arg0, arg1){
-                            console.log(arg1[0]["_model"]["label"]);
+                                // Configuration options go here
+                                options: {
+                                    onClick: function(arg0, arg1){
+                                        console.log(arg1[0]["_model"]["label"]);
+                                    }
+                                }
+                            });
                         }
-                    }
                 });
+                
             });
             
         </script>
