@@ -2,8 +2,8 @@ var PersonalityInsightsV3 = require('watson-developer-cloud/personality-insights
 var PersonalityInsights = new PersonalityInsightsV3(
     {
         url: 'https://gateway-wdc.watsonplatform.net/personality-insights/api',
-        iam_apikey: 'movoO0RALv_nClFy598ipfNYBO9DWA1R9nojmexJA6No',
-        version_date: '2017-10-13'
+		iam_apikey: 'movoO0RALv_nClFy598ipfNYBO9DWA1R9nojmexJA6No',
+		version: '2017-10-13'
     }
 );
 var bodyParser = require('body-parser');
