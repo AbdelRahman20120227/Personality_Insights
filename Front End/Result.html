@@ -27,69 +27,185 @@
                 return null;
             }
 
+            var state = true;
+            var big5, needs, values;
+            var json;
+            var children = {};
+            function drawChart(drawingData, type){
+                var ctx = document.getElementById("myChart").getContext('2d');
+                var chart = new Chart(ctx, {
+                    // The type of chart we want to create
+                    type: type,
+
+                    // The data for our dataset
+                    data: {
+                        labels: drawingData.labels,
+                        datasets: [{
+                            data: drawingData.data,
+                            backgroundColor: [
+                                'red',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)'
+                            ],
+                            borderColor: [
+                                'red',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+
+                    },
+
+                    // Configuration options go here
+                    options: {
+                        onClick: function(arg0, arg1){
+                            if(state && arg1[0]["_model"] != null){
+                                console.log(arg1[0]["_model"]["label"]);
+                                resetDrawing();
+                                drawChart(children[arg1[0]["_model"]["label"]], 'bar');
+                                state = false;
+                            }
+                        }
+                    }
+                });
+            }
+            function fill(json){
+                
+                var labels = [];
+                var data = [];
+                for(var i = 0; i < json.length; i++){
+                    var curr = json[i];
+                    var name = curr["name"];
+                    var percentile = curr["percentile"];
+                    labels[i] = name;
+                    data[i] = percentile;
+                    console.log("NUMBER: " + i + ": " + name + " " + percentile);
+                }
+                return {'labels' : labels, 'data': data};
+            }
+            
+            function resetDrawing(){
+                $("#big5").remove();
+                $("#container").append(
+                    "<div id = 'big5' class = 'chart'>"+
+                        "<canvas id='myChart'></canvas>"+
+                    "</div>");
+            }
+
             $(window).on('load', function(){
                 $.ajax({
                         type: 'get',
                         url: "getResult",
                         success: function(resultData) {
-                            console.log(resultData);
-                            var labels = [];
-                            var data = [];
-                            for(var i = 0; i < 5; i++){
-                                var curr = JSON.parse(resultData)["personality"][i];
-                                var name = curr["name"];
-                                var percentile = curr["percentile"];
-                                labels[i] = name;
-                                data[i] = percentile;
-                                console.log("NUMBER: " + i + ": " + name + " " + percentile);
-                            }
                             
-                            var ctx = document.getElementById('myChart').getContext('2d');
-                            var chart = new Chart(ctx, {
-                                // The type of chart we want to create
-                                type: 'doughnut',
+                            console.log(resultData);
 
-                                // The data for our dataset
-                                data: {
-                                    labels: labels,
-                                    datasets: [{
-                                        data: data,
-                                        backgroundColor: [
-                                            'red',
-                                            'rgba(54, 162, 235, 0.2)',
-                                            'rgba(255, 206, 86, 0.2)',
-                                            'rgba(75, 192, 192, 0.2)',
-                                            'rgba(153, 102, 255, 0.2)',
-                                            'rgba(255, 159, 64, 0.2)'
-                                        ],
-                                        borderColor: [
-                                            'red',
-                                            'rgba(54, 162, 235, 1)',
-                                            'rgba(255, 206, 86, 1)',
-                                            'rgba(75, 192, 192, 1)',
-                                            'rgba(153, 102, 255, 1)',
-                                            'rgba(255, 159, 64, 1)'
-                                        ],
-                                        borderWidth: 1
-                                    }]
-                                },
+                            json = JSON.parse(resultData);
+                            
+                            big5 = fill(json['personality']);
+                            needs = fill(json['needs']);
+                            values = fill(json['values']);
+                            
+                            for(var i = 0; i < 5; i++){
+                                children[json['personality'][i]['name']] = fill(json['personality'][i]['children']);
+                            }
 
-                                // Configuration options go here
-                                options: {
-                                    onClick: function(arg0, arg1){
-                                        console.log(arg1[0]["_model"]["label"]);
-                                    }
-                                }
-                            });
+                            drawChart(big5, 'doughnut');
+                            
+                            
                         }
+                });
+                $(".tab").each(function(i, obj){
+                    $(obj).on('click', function(){
+                        $(".tab").attr('class', $(".tab").attr('class').replace(" active", ""));
+                        $(obj).attr('class', $(obj).attr('class') + " active");
+                        
+                        resetDrawing();
+
+                        if(i == 0){
+                            drawChart(big5, 'doughnut');
+                            state = true;
+                        }
+                        else if(i ==1){
+                            drawChart(needs, 'bar');
+                            state = false;
+                        }
+                        else{
+                            drawChart(values, 'bar');
+                            state = false;
+
+                        }
+                    });
                 });
                 
             });
             
         </script>
+        <style type="text/css">
+            body{
+                margin: 0px;
+            }
+            #tabsArea{
+                overflow: hidden;
+                border: 1px solid;
+                background-color: #9932CC;
+            }
+            .tab{
+                padding: 14px 18px ;
+                background-color: inherit;
+                color: white;
+                border: none;
+                cursor: pointer;
+                font-weight: bold;
+                font-family: "Times New Roman", Times, serif;
+                font-size: 15px;
+                transition: 1s;
+                outline: none;
+                float: left;
+            }
+            .tab:hover{
+                background-color: #8B008B;
+            }
+            .tab.active{
+                background-color: #8B008B;
+            }
+            #container{
+                margin: 20px auto;
+                border: 1px solid #9932CC;
+                width: 70%;
+                height: 70%;
+            }
+            .chart{
+                padding: 30px;
+            }
+            h1{
+                text-align: center;
+                font-weight: bold;
+                font-family: "Times New Roman", Times, serif;
+                color: #9932CC;
+            }
+        </style>
     </head>
     <body>
-        <canvas id="myChart"></canvas>
+        <h1>Analysis of AbdelRahman</h1>
+        <div id = 'container'>
+            <div id = "tabsArea">
+                <button class = 'tab'>Big 5</button>
+                <button class = 'tab'>Needs</button>
+                <button class = 'tab'>Values</button>
+            </div>
+            <div id = 'big5' class = 'chart'>
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+        
     </body>
 
 </html>

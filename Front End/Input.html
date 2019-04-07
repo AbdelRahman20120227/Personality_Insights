@@ -22,7 +22,14 @@
         	}
         	h1{
         		text-align: center;
+                font-weight: bold;
+                font-family: "Times New Roman", Times, serif;
         	}
+            h3{
+                text-align: center;
+                font-weight: bold;
+                font-family: "Times New Roman", Times, serif;
+            }
         	button{
         		background-color: red;
         		color: white;
@@ -30,6 +37,7 @@
         		height: 30px;
         		font-weight: bold;
         		font-size: 15px;
+                font-family: "Times New Roman", Times, serif;
         	}
         	button:hover{
         		background-color: blue;
@@ -67,12 +75,14 @@
         	$(window).on('load', function(){
                 
                 $("#start").on('click', function(){
-                	alert($("#data").val());
-
+                    var ans = "";
+                    $(".data").each(function(i, obj){
+                        ans += '\n' + $(obj).val();
+                    });
                 	$.ajax({
                         type: 'POST',
                         url: "test",
-                        data: {"data": $("#data").val()},
+                        data: {"data": ans},
                         success: function(resultData) {
                         	console.log(resultData["status"]);
                         	if(resultData["status"] == "success"){
@@ -88,10 +98,18 @@
         </script>
     </head>
     <body>
+        <h1>Please answer The following questions</h1>
+            
         <div class = "myDiv">
-        	<h1>Speak here</h1>
-        	<textarea id = "data" rows="20"></textarea>
-        	<button id = "start">Start Analysis</button>
+            <h3>What are some things you would really like to see happen in your life?</h3>
+        	<textarea class = "data" rows="10"></textarea>
+            <h3>When was a time you were wrongfully accused? what did you do in that situation?</h3>
+            <textarea class = "data" rows="10"></textarea>
+            <h3>As a pilot, is there a particular location you don’t like flying over or a least favourite route?</h3>
+            <textarea class = "data" rows="10"></textarea>
+            <h3>What made you choose the airline you work for?</h3>
+            <textarea class = "data" rows="10"></textarea>
+            <button id = "start">Start Analysis</button>
         </div>
     </body>
 
